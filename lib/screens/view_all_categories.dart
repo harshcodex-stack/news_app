@@ -24,6 +24,34 @@ class _ViewAllCategoryScreenState extends State<ViewAllCategoryScreen> {
     setState(() {});
   }
 
+  Future<void> _confirmDelete(int categoryId, String categoryName) async {
+    final bool? confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Confirm Deletion'),
+          content: Text('Are you sure you want to delete "$categoryName"?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false), // Cancel
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true), // Confirm
+              child: const Text('Delete'),
+              style: TextButton.styleFrom(foregroundColor: Colors.red),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed == true) {
+      await CategoryService().deleteCategory(categoryId);
+      _loadCategories();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -55,12 +83,13 @@ class _ViewAllCategoryScreenState extends State<ViewAllCategoryScreen> {
                     );
                   },
                 ),
-
                 IconButton(
                   icon: const Icon(Icons.delete),
-                  onPressed: () async {
-                    await CategoryService().deleteCategory(categories[index].id!);
-                    _loadCategories();
+                  onPressed: () {
+                    _confirmDelete(
+                      categories[index].id!,
+                      categories[index].categoryName,
+                    );
                   },
                 ),
               ],
